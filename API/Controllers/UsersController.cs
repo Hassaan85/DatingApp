@@ -1,34 +1,49 @@
 ﻿using API.Data;
+using API.DTOs;
 using API.Entities;
+using API.Interfaces;
+using AutoMapper;
+using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 
 namespace API.Controllers;
 
+[Authorize]
+
 public class UsersController : BaseApiController
 {
-  private readonly DataContext _context;
+  private readonly IUserRepositary _userRepositary;
 
-  public UsersController(DataContext context)
+  private readonly IMapper _mapper;
+
+  public UsersController(IUserRepositary userRepositary)
   {
-    _context =  context;
+    _userRepositary =  userRepositary;
 
   }
 
   [HttpGet]
-  public ActionResult<IEnumerable<AppUser>> GetUsers()
+  public async Task <ActionResult<IEnumerable<MemberDTO>>> GetUsers()
   {
-    var users =_context.Users.ToList();
+    var users= await _userRepositary.GetMemberAsync();
 
-    return users;
+   //below commented since we using projection
+
+    // var usersToReturn = _mapper.Map<IEnumerable<MemberDTO>>(users);
+
+    return Ok(users);
+ 
 
   }
 
-  [HttpGet ("{id}")]
-  public ActionResult <AppUser>GetUser (int id)
+  [HttpGet ("{username}")]
+  public async Task <ActionResult <MemberDTO>>GetUser (string username)
   {
-    var user = _context.Users.Find(id);
+    return await _userRepositary.GetMemberAsync(username);
 
-    return user;
+    //below commented since we using projection
+
+    //  return _mapper.Map<MemberDTO>(user);
   }
 }
 
