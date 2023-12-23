@@ -14,7 +14,7 @@ public class UsersController : BaseApiController
 {
   private readonly IUserRepositary _userRepositary;
 
-  private readonly IMapper _mapper;
+
 
   public UsersController(IUserRepositary userRepositary)
   {

@@ -1,9 +1,12 @@
+using System.Text;
 using API.Data;
 using API.Extentions;
 using API.Interfaces;
 using API.Middleware;
 using API.Services;
+using Microsoft.AspNetCore.Authentication.JwtBearer;
 using Microsoft.EntityFrameworkCore;
+using Microsoft.IdentityModel.Tokens;
 
 var builder = WebApplication.CreateBuilder(args);
 
@@ -11,8 +14,17 @@ var builder = WebApplication.CreateBuilder(args);
 
 builder.Services.AddControllers();
 builder.Services.AddApplicationServices(builder.Configuration);
-builder.Services.AddScoped<IUserRepositary, UserRepositary>();
-builder.Services.AddAutoMapper(AppDomain.CurrentDomain.GetAssemblies());
+builder.Services.AddAuthentication(JwtBearerDefaults.AuthenticationScheme)
+.AddJwtBearer(options => {
+  options.TokenValidationParameters=new TokenValidationParameters
+  {
+    ValidateIssuerSigningKey=true,
+    IssuerSigningKey= new SymmetricSecurityKey(Encoding.UTF8.GetBytes(builder.Configuration["TokenKey"])),
+
+    ValidateIssuer=false,
+    ValidateAudience=false
+  };
+});
 
 
 var app = builder.Build();
@@ -22,6 +34,8 @@ var app = builder.Build();
 
 
 app.UseCors(builder => builder.AllowAnyHeader().AllowAnyMethod().WithOrigins("https://localhost:4200"));
+app.UseAuthentication();
+app.UseAuthorization();
 
 app.MapControllers();
 
